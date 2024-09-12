@@ -1,8 +1,7 @@
 package com.revature.jobpostservice.service;
-import com.revature.jobpostservice.model.Employer;
 import com.revature.jobpostservice.model.Job;
 import com.revature.jobpostservice.model.User;
-import com.revature.jobpostservice.repository.EmployeeRepository;
+import com.revature.jobpostservice.repository.EmployerRepository;
 import com.revature.jobpostservice.repository.JobRepository;
 import com.revature.jobpostservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class JobService {
@@ -20,7 +18,7 @@ public class JobService {
     private JobRepository jobRepository;
 
     @Autowired
-    private EmployeeRepository employeeRepository;
+    private EmployerRepository employeeRepository;
 
     @Autowired
     private UserRepository userRepository;
