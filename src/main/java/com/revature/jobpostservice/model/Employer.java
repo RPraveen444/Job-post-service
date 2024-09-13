@@ -25,7 +25,7 @@ public class Employer {
 
     @NotBlank(message = "Employer name is required")
     @Column(name = "employer_name", nullable = false, length = 255)
-    private String employername;
+    private String employerName;
 
     @Email(regexp = "[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+\\.[a-z]{2,}", message = "Invalid email")
     @Column(name = "email", nullable = false, length = 255, unique = true)
@@ -68,6 +68,12 @@ public class Employer {
     public void onUpdate() {
         this.modifiedAt = Instant.now();
     }
+
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_expiry")
+    private Instant otpExpiry;
 
 
 }

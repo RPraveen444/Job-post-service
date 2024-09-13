@@ -50,6 +50,15 @@ public class JobController {
         jobService.applyForJob(jobId, userId);
     }
 
+    @GetMapping("/employer/{employerId}")
+    public ResponseEntity<List<Job>> getJobsByEmployerId(@PathVariable Long employerId) {
+        List<Job> jobs = jobService.getJobsByEmployerId(employerId);
+        if (jobs.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content if no jobs found
+        }
+        return ResponseEntity.ok(jobs); // 200 OK with list of jobs
+    }
+
 
 }
 
