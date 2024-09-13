@@ -13,7 +13,6 @@ import java.util.Optional;
 @Service
 public class JobService {
 
-
     @Autowired
     private JobRepository jobRepository;
 
@@ -41,6 +40,10 @@ public class JobService {
 
         job.getApplicants().add(user);
         jobRepository.save(job);
+    }
+
+    public List<Job> getJobsByEmployerId(Long employerId) {
+        return jobRepository.findByEmployer_EmpolyerId(employerId);
     }
 
 }
