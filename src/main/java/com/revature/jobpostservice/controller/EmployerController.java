@@ -67,6 +67,44 @@ public class EmployerController {
         }
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<BaseResponse<String>> forgotPassword(@RequestParam String email) {
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+        try {
+            employerService.generateOtp(email);
+            baseResponse.setStatus(HttpStatus.OK.value());
+            baseResponse.setMessages("OTP sent to email");
+            baseResponse.setData("Check your email for the OTP.");
+        } catch (InvalidCredentialsException e) {
+            baseResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponse.setMessages(e.getMessage());
+        } catch (Exception e) {
+            baseResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponse.setMessages("Error during OTP generation: " + e.getMessage());
+        }
+        return ResponseEntity.ok(baseResponse);
+    }
+
+    @PostMapping("/reset-password-otp")
+    public ResponseEntity<BaseResponse<String>> resetPasswordUsingOtp(
+            @RequestParam String email,
+            @RequestParam String otp,
+            @RequestParam String newPassword) {
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+        try {
+            employerService.resetPasswordUsingOtp(email, otp, newPassword);
+            baseResponse.setStatus(HttpStatus.OK.value());
+            baseResponse.setMessages("Password reset successfully");
+        } catch (InvalidCredentialsException e) {
+            baseResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponse.setMessages(e.getMessage());
+        } catch (Exception e) {
+            baseResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponse.setMessages("Error during password reset: " + e.getMessage());
+        }
+        return ResponseEntity.ok(baseResponse);
+    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<Employer> updateEmployer(@PathVariable Long id, @RequestBody Employer employerDetails) {
         Employer updatedEmployer = employerService.updateEmployer(id, employerDetails);
@@ -91,9 +129,5 @@ public class EmployerController {
         return ResponseEntity.ok(employers);
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<Employer> login(@RequestParam String email, @RequestParam String password) {
-//        Employer employer = employerService.login(email, password);
-//        return ResponseEntity.ok(employer);
-//    }
+
 }
