@@ -1,6 +1,6 @@
 package com.revature.jobpostservice.controller;
 
-
+import com.revature.jobpostservice.model.Application;
 import com.revature.jobpostservice.model.Job;
 import com.revature.jobpostservice.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +49,21 @@ public class JobController {
         jobService.applyForJob(jobId, userId);
     }
 
+    @GetMapping("/user/{userId}/applications")
+    public ResponseEntity<List<Application>> getUserApplications(@PathVariable Long userId) {
+        List<Application> applications = jobService.getUserApplications(userId);
+        return new ResponseEntity<>(applications, HttpStatus.OK);
+    }
+    @PostMapping("/{jobId}/withdraw/{userId}")
+    public ResponseEntity<String> withdrawApplication(@PathVariable Long jobId, @PathVariable Long userId) {
+        try {
+            jobService.withdrawApplication(jobId, userId);
+            return new ResponseEntity<>("Application withdrawn successfully", HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping("/employer/{employerId}")
     public ResponseEntity<List<Job>> getJobsByEmployerId(@PathVariable Long employerId) {
         List<Job> jobs = jobService.getJobsByEmployerId(employerId);
@@ -58,7 +72,6 @@ public class JobController {
         }
         return ResponseEntity.ok(jobs); // 200 OK with list of jobs
     }
-
 
 }
 
