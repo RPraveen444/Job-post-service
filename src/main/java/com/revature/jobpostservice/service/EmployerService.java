@@ -13,6 +13,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -69,6 +70,78 @@ public class EmployerService {
         }
 
         throw new InvalidCredentialsException("Invalid password");
+    }
+
+    public String generateOtp(String email) {
+        Employer employer = employerRepository.findByEmail(email);
+        if (employer == null) {
+            throw new InvalidCredentialsException("Email does not exist");
+        }
+
+        String otp = generator.generateOtp();
+        employer.setOtp(otp);
+        employer.setOtpExpiry(Instant.now().plusSeconds(300));
+        employerRepository.save(employer);
+
+        String emailBody = "Hello " + employer.getFirstName() + ",\n\n" +
+                "Use the following OTP to reset your password: " + otp + "\n\n" +
+                "This OTP is valid for 5 minutes.\n\n" +
+                "Best regards,\n" +
+                "The RevHire Team";
+
+        try {
+            emailService.sendEmail(employer.getEmail(), "Password Reset", emailBody);
+        } catch (MessagingException e) {
+            throw new InvalidEmailException("Failed to send email to " + employer.getEmail());
+        }
+
+        return otp;
+    }
+
+    public boolean validateOtp(String email, String otp) {
+        Employer employer = employerRepository.findByEmail(email);
+        if (employer == null) {
+            throw new InvalidCredentialsException("Email does not exist");
+        }
+
+        return otp.equals(employer.getOtp()) && employer.getOtpExpiry().isAfter(Instant.now());
+    }
+
+    public void resetPasswordUsingOtp(String email, String otp, String newPassword) {
+        Employer employer = employerRepository.findByEmail(email);
+        if (employer == null) {
+            throw new InvalidCredentialsException("Email does not exist");
+        }
+
+        if (employer.getOtp() == null || !employer.getOtp().equals(otp)) {
+            throw new InvalidCredentialsException("Invalid OTP");
+        }
+
+        if (Instant.now().isAfter(employer.getOtpExpiry())) {
+            // OTP has expired
+            employer.setOtp(null);
+            employer.setOtpExpiry(null);
+            employerRepository.save(employer);
+            throw new InvalidCredentialsException("OTP has expired");
+        }
+
+        String hashedPassword = passwordEncrypter.hashPassword(newPassword);
+        employer.setPassword(hashedPassword);
+        employer.setOtp(null);
+        employer.setOtpExpiry(null);
+        employerRepository.save(employer);
+
+        String emailBody = "Hello " + employer.getFirstName() + ",\n\n" +
+                "Your password has been successfully reset.\n\n" +
+                "If you did not request this change, please contact support immediately.\n\n" +
+                "Best regards,\n" +
+                "The RevHire Team";
+
+        try {
+            emailService.sendEmail(employer.getEmail(), "Password Reset Successful", emailBody);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email notification to " + employer.getEmail(), e);
+        }
     }
 
     public Employer updateEmployer(Long id, Employer employerDetails) {
