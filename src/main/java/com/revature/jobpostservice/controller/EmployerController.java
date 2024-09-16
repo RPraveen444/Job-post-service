@@ -4,6 +4,7 @@ import com.revature.jobpostservice.exceptions.InvalidCredentialsException;
 import com.revature.jobpostservice.model.Employer;
 import com.revature.jobpostservice.service.EmployerService;
 import com.revature.jobpostservice.util.BaseResponse;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,6 +106,26 @@ public class EmployerController {
         return ResponseEntity.ok(baseResponse);
     }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<BaseResponse<String>> resetPassword(
+            @RequestParam String email,
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword) {
+        BaseResponse<String> baseResponse = new BaseResponse<>();
+        try {
+            employerService.updateUserPassword(email, oldPassword, newPassword);
+            baseResponse.setStatus(HttpStatus.OK.value());
+            baseResponse.setMessages("Password updated successfully");
+        } catch (InvalidCredentialsException e) {
+            baseResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponse.setMessages(e.getMessage());
+        } catch (Exception e) {
+            baseResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponse.setMessages("Error during password update: " + e.getMessage());
+        }
+        return ResponseEntity.ok(baseResponse);
+    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<Employer> updateEmployer(@PathVariable Long id, @RequestBody Employer employerDetails) {
         Employer updatedEmployer = employerService.updateEmployer(id, employerDetails);
@@ -128,6 +149,8 @@ public class EmployerController {
         List<Employer> employers = employerService.fetchAllEmployers();
         return ResponseEntity.ok(employers);
     }
+
+
 
 
 }

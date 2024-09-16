@@ -144,6 +144,32 @@ public class EmployerService {
         }
     }
 
+    public void updateUserPassword(String email, String oldPassword, String newPassword) {
+        Employer employer = employerRepository.findByEmail(email);
+        if (employer == null) {
+            throw new InvalidCredentialsException("Email does not exist");
+        }
+
+        if (!passwordEncrypter.checkPassword(oldPassword, employer.getPassword())) {
+            throw new InvalidCredentialsException("Old password is incorrect");
+        }
+
+        employer.setPassword(passwordEncrypter.hashPassword(newPassword));
+        employerRepository.save(employer);
+
+        String emailBody = "Hello " + employer.getFirstName() + ",\n\n" +
+                "Your password has been successfully reset.\n\n" +
+                "If you did not request this change, please contact support immediately.\n\n" +
+                "Best regards,\n" +
+                "The RevHire Team";
+
+        try {
+            emailService.sendEmail(employer.getEmail(), "Password Reset Successful", emailBody);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email notification to " + employer.getEmail(), e);
+        }
+    }
+
     public Employer updateEmployer(Long id, Employer employerDetails) {
         Employer existingEmployer = employerRepository.findById(id)
                 .orElseThrow(() -> new EmployerNotFoundException("Employer not found with id: " + id));
