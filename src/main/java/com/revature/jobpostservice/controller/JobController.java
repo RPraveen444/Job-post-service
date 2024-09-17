@@ -73,5 +73,10 @@ public class JobController {
         return ResponseEntity.ok(jobs); // 200 OK with list of jobs
     }
 
+    @GetMapping("/not-applied/{userId}")
+    public List<Job> getJobsNotAppliedByUser(@PathVariable Long userId) {
+        return jobService.getJobsNotAppliedByUser(userId);
+    }
+
 }
 

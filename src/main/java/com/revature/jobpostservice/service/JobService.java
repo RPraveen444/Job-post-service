@@ -79,5 +79,9 @@ public class JobService {
         return jobRepository.findByEmployer_EmpolyerId(employerId);
     }
 
+    public List<Job> getJobsNotAppliedByUser(Long userId) {
+        return jobRepository.findJobsNotAppliedByUser(userId);
+    }
+
 }
 
